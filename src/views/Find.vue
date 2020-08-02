@@ -15,20 +15,67 @@
         <div class="right"></div>
       </div>
     </div>
+
+    <van-swipe class="banner" :autoplay="3000" indicator-color="white">
+      <van-swipe-item v-for="banner in banners" :key="banner.bannerId">
+        <a href="javascript:void(0);">
+          <img :src="banner.pic" />
+        </a>
+      </van-swipe-item>
+    </van-swipe>
+
+    <template v-for="(block, index) in blocks">
+      <component
+        :is="block.showType | componentFilter"
+        :key="index"
+        :data="block"
+      >
+      </component>
+    </template>
   </div>
 </template>
 
 <script>
-import { Search } from "vant";
+import { getBanner, getHomepage } from "@/api";
 export default {
   name: "Find",
   components: {
-    "van-search": Search
+    "homepage-slide-songlist-align": () =>
+      import("./homeComponent/Homepage-slide-songlist-align.vue"),
+    "homepage-slide-playlist": () =>
+      import("./homeComponent/Homepage-slide-playlist.vue"),
+    "homepage-slide-mlog": () =>
+      import("./homeComponent/Homepage-slide-mlog.vue"),
+    "homepage-slide-listen-live": () =>
+      import("./homeComponent/Homepage-slide-listen-live.vue"),
+    "homepage-slide-playable-resource": () =>
+      import("./homeComponent/Homepage-slide-playable-resource.vue")
   },
   data() {
     return {
-      search: ""
+      search: "",
+      banners: [],
+      blocks: []
     };
+  },
+  filters: {
+    componentFilter(showType) {
+      return showType.toLocaleLowerCase().replace(/_/g, "-");
+    }
+  },
+  async created() {
+    this.getBanner();
+    this.getHomepage();
+  },
+  methods: {
+    async getBanner() {
+      let res = await getBanner();
+      this.banners = res.banners;
+    },
+    async getHomepage() {
+      let res = await getHomepage();
+      this.blocks = res.data.blocks;
+    }
   }
 };
 </script>
@@ -37,6 +84,7 @@ export default {
 .hd-wrap {
   height: 48px;
   .m-hd {
+    overflow: hidden;
     position: fixed;
     top: 0;
     left: 0;
@@ -62,6 +110,18 @@ export default {
     }
     .right {
       width: 24px;
+    }
+  }
+}
+
+.banner {
+  a {
+    width: calc(100% - 8.533vw);
+    margin: 0 auto;
+    display: block;
+    img {
+      width: 100%;
+      border-radius: 8px;
     }
   }
 }
